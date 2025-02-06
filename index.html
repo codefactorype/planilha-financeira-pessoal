@@ -73,9 +73,30 @@
       gap: 10px;
     }
     
+    /* Em telas pequenas, as legendas serão exibidas em uma única coluna */
+    @media (max-width: 480px) {
+      .legenda ul {
+        grid-template-columns: 1fr;
+      }
+    }
+    
     .legenda li {
       margin-bottom: 5px;
       text-align: left;
+    }
+    
+    /* Seção para definir o período (mês e ano) */
+    .periodo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .periodo label {
+      font-size: 1.2rem;
+      margin-right: 10px;
+    }
+    .periodo input {
+      font-size: 1rem;
+      padding: 5px;
     }
     
     section {
@@ -316,7 +337,7 @@
   <div class="container">
     <h2>Planilha Financeira Pessoal</h2>
     
-    <!-- Legenda (organizada em duas colunas) -->
+    <!-- Legenda -->
     <div class="legenda">
       <h4>Legenda</h4>
       <ul>
@@ -337,6 +358,12 @@
         </li>
       </ul>
       <p>Cada categoria está diferenciada por cores para facilitar a visualização e organização das suas finanças.</p>
+    </div>
+    
+    <!-- Mecanismo para definir Mês e Ano -->
+    <div class="periodo">
+      <label for="planilhaPeriodo">Mês e Ano da Planilha:</label>
+      <input type="month" id="planilhaPeriodo">
     </div>
     
     <!-- RECEITAS FIXAS -->
@@ -469,29 +496,59 @@
   <script>
     const STORAGE_KEY = 'planilhaFinanceiraData';
 
-    // Calcula os totais e atualiza os campos correspondentes
+    // Função para formatar um número para o formato financeiro brasileiro
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+    }
+    
+    // Função para converter uma string formatada (ex: "R$ 1.234,56") em número
+    function parseCurrency(value) {
+      if (!value) return 0;
+      // Remove "R$" e quaisquer espaços, pontos e substitui a vírgula pelo ponto
+      let clean = value.replace(/[^0-9,.-]+/g, '');
+      if (clean.indexOf(',') > -1) {
+        clean = clean.replace(/\./g, '').replace(',', '.');
+      }
+      return parseFloat(clean) || 0;
+    }
+    
+    // Calcula os totais usando parseCurrency para obter valores numéricos
     function calcularTotais() {
       let totalReceitas = 0;
       let totalDespesas = 0;
       
       document.querySelectorAll("input.receita").forEach(input => {
-        totalReceitas += parseFloat(input.value) || 0;
+        totalReceitas += parseCurrency(input.value);
       });
       
       document.querySelectorAll("input.despesa").forEach(input => {
-        totalDespesas += parseFloat(input.value) || 0;
+        totalDespesas += parseCurrency(input.value);
       });
       
       document.getElementById("totalReceitas").value = totalReceitas.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       document.getElementById("totalDespesas").value = totalDespesas.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       document.getElementById("saldoFinal").value = (totalReceitas - totalDespesas).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       
-      // Salva os dados atualizados
       saveAllData();
     }
     
+    // Ao criar um input financeiro, adiciona eventos para formatação
+    function addCurrencyFormatting(input) {
+      input.addEventListener("blur", function() {
+        if (this.value.trim() !== "") {
+          let num = parseCurrency(this.value);
+          this.value = formatCurrency(num);
+          calcularTotais();
+        }
+      });
+      input.addEventListener("focus", function() {
+        let num = parseCurrency(this.value);
+        // Ao focar, remove a formatação para facilitar a edição (exibe apenas o número)
+        this.value = num ? num.toString().replace('.', ',') : "";
+      });
+    }
+    
     // Adiciona uma nova linha para seções com Descrição e Valor
-    // Parâmetros opcionais permitem pré-preencher os campos (usado no loadData)
     function adicionarItem(sectionId, tipo, descricao = '', valor = '') {
       const section = document.getElementById(sectionId);
       const tbody = section.querySelector("table tbody");
@@ -507,15 +564,15 @@
       inputDesc.addEventListener("input", calcularTotais);
       tdDesc.appendChild(inputDesc);
       
-      // Célula de Valor
+      // Célula de Valor (aplica formatação financeira)
       const tdValor = document.createElement("td");
       const inputValor = document.createElement("input");
-      inputValor.type = "number";
+      inputValor.type = "text"; // Alterado para "text" para permitir formatação
       inputValor.className = tipo; // "receita" ou "despesa"
-      inputValor.min = "0";
-      inputValor.step = "0.01";
+      inputValor.placeholder = "0,00";
       inputValor.value = valor;
       inputValor.addEventListener("input", calcularTotais);
+      addCurrencyFormatting(inputValor);
       tdValor.appendChild(inputValor);
       
       tr.appendChild(tdDesc);
@@ -523,8 +580,7 @@
       tbody.appendChild(tr);
     }
     
-    // Adiciona uma nova linha para a seção de Gastos com Funcionários
-    // Parâmetros opcionais permitem pré-preencher os campos (usado no loadData)
+    // Adiciona uma nova linha para a seção de Gastos com Funcionários (aplica formatação financeira nos valores)
     function adicionarFuncionario(nome = '', remuneracao = '', passagem = '', alimentacao = '') {
       const section = document.getElementById("gastos-funcionarios");
       const tbody = section.querySelector("table tbody");
@@ -542,34 +598,34 @@
       // Remuneração
       const tdRemuneracao = document.createElement("td");
       const inputRemuneracao = document.createElement("input");
-      inputRemuneracao.type = "number";
+      inputRemuneracao.type = "text";
       inputRemuneracao.className = "despesa";
-      inputRemuneracao.min = "0";
-      inputRemuneracao.step = "0.01";
+      inputRemuneracao.placeholder = "0,00";
       inputRemuneracao.value = remuneracao;
       inputRemuneracao.addEventListener("input", calcularTotais);
+      addCurrencyFormatting(inputRemuneracao);
       tdRemuneracao.appendChild(inputRemuneracao);
       
       // Passagem
       const tdPassagem = document.createElement("td");
       const inputPassagem = document.createElement("input");
-      inputPassagem.type = "number";
+      inputPassagem.type = "text";
       inputPassagem.className = "despesa";
-      inputPassagem.min = "0";
-      inputPassagem.step = "0.01";
+      inputPassagem.placeholder = "0,00";
       inputPassagem.value = passagem;
       inputPassagem.addEventListener("input", calcularTotais);
+      addCurrencyFormatting(inputPassagem);
       tdPassagem.appendChild(inputPassagem);
       
       // Alimentação
       const tdAlimentacao = document.createElement("td");
       const inputAlimentacao = document.createElement("input");
-      inputAlimentacao.type = "number";
+      inputAlimentacao.type = "text";
       inputAlimentacao.className = "despesa";
-      inputAlimentacao.min = "0";
-      inputAlimentacao.step = "0.01";
+      inputAlimentacao.placeholder = "0,00";
       inputAlimentacao.value = alimentacao;
       inputAlimentacao.addEventListener("input", calcularTotais);
+      addCurrencyFormatting(inputAlimentacao);
       tdAlimentacao.appendChild(inputAlimentacao);
       
       tr.appendChild(tdNome);
@@ -579,8 +635,7 @@
       tbody.appendChild(tr);
     }
     
-    // Exclui a última linha da seção especificada.
-    // Se houver apenas uma linha, os inputs são limpos.
+    // Exclui a última linha da seção especificada (ou limpa os inputs se for a única linha)
     function excluirUltimaLinha(sectionId) {
       const section = document.getElementById(sectionId);
       const tbody = section.querySelector("table tbody");
@@ -594,9 +649,10 @@
       saveAllData();
     }
     
-    // Salva todos os dados atuais da planilha no localStorage
+    // Salva todos os dados (incluindo o período) no localStorage
     function saveAllData() {
       const data = {
+        periodo: document.getElementById("planilhaPeriodo").value,
         receitasFixas: [],
         receitasVariaveis: [],
         despesasFixas: [],
@@ -654,12 +710,20 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     }
     
-    // Carrega os dados salvos do localStorage e popula as tabelas.
-    // Se não houver dados, cria uma linha padrão para cada seção.
+    // Carrega os dados salvos do localStorage e popula os campos, definindo também o período
     function loadData() {
+      const periodoInput = document.getElementById("planilhaPeriodo");
       const dataStr = localStorage.getItem(STORAGE_KEY);
       if (dataStr) {
         const data = JSON.parse(dataStr);
+        if (data.periodo) {
+          periodoInput.value = data.periodo;
+        } else {
+          let d = new Date();
+          let month = String(d.getMonth() + 1).padStart(2, '0');
+          let year = d.getFullYear();
+          periodoInput.value = `${year}-${month}`;
+        }
         
         // Receitas Fixas
         const tbodyReceitasFixas = document.querySelector("#receitas-fixas tbody");
@@ -716,7 +780,10 @@
           adicionarFuncionario();
         }
       } else {
-        // Se não houver dados salvos, cria uma linha padrão para cada seção.
+        let d = new Date();
+        let month = String(d.getMonth() + 1).padStart(2, '0');
+        let year = d.getFullYear();
+        periodoInput.value = `${year}-${month}`;
         adicionarItem("receitas-fixas", "receita");
         adicionarItem("receitas-variaveis", "receita");
         adicionarItem("despesas-fixas", "despesa");
@@ -724,11 +791,9 @@
         adicionarFuncionario();
       }
       
-      // Atualiza os totais após o carregamento
       calcularTotais();
     }
     
-    // Carrega os dados ao iniciar a página
     window.addEventListener("load", loadData);
   </script>
   
@@ -737,7 +802,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   
   <script>
-    // Função que, ao clicar no botão Exportar, gera um PDF com o conteúdo da .container
+    // Ao clicar no botão Exportar, gera um PDF com o conteúdo da .container
     document.getElementById("exportButton").addEventListener("click", function() {
       html2canvas(document.querySelector(".container")).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
