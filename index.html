@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planilha Financeira Pessoal</title>
+  <!-- Importando a fonte Roboto do Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+  <style>
+    /* Variáveis de cores e configurações globais */
+    :root {
+      --primary-color: #007bff;       /* Gastos com Funcionários */
+      --success-color: #218838;       /* Receitas Fixas */
+      --success-alt-color: #28a745;    /* Receitas Variáveis */
+      --danger-color: #C82333;        /* Despesas Fixas */
+      --warning-color: #FFC107;       /* Despesas Variáveis */
+      --background-gradient: linear-gradient(135deg, #f0f4f8, #ffffff);
+      --font-family: 'Roboto', sans-serif;
+    }
+
+    /* Reset e configurações globais */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: var(--font-family);
+      background: var(--background-gradient);
+      color: #343A40;
+      line-height: 1.6;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+    }
+    
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+      font-size: 2.2rem;
+    }
+    
+    .legenda {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 10px;
+      background: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    
+    .legenda h4 {
+      margin-bottom: 10px;
+      font-size: 1.4rem;
+      color: #343A40;
+    }
+    
+    .legenda ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 10px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    
+    .legenda li {
+      margin-bottom: 5px;
+      text-align: left;
+    }
+    
+    section {
+      margin-bottom: 40px;
+    }
+    
+    /* Cabeçalhos das sessões centralizados */
+    section h3 {
+      text-align: center;
+    }
+    
+    /* Estilização das seções (cada uma com sua cor característica) */
+    /* Receitas Fixas */
+    #receitas-fixas h3 {
+      background-color: var(--success-color);
+      color: #fff;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    #receitas-fixas table thead th {
+      background-color: var(--success-color);
+      color: #fff;
+      padding: 12px 10px;
+      text-align: left;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+    }
+    
+    /* Receitas Variáveis */
+    #receitas-variaveis h3 {
+      background-color: var(--success-alt-color);
+      color: #fff;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    #receitas-variaveis table thead th {
+      background-color: var(--success-alt-color);
+      color: #fff;
+      padding: 12px 10px;
+      text-align: left;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+    }
+    
+    /* Despesas Fixas */
+    #despesas-fixas h3 {
+      background-color: var(--danger-color);
+      color: #fff;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    #despesas-fixas table thead th {
+      background-color: var(--danger-color);
+      color: #fff;
+      padding: 12px 10px;
+      text-align: left;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+    }
+    
+    /* Despesas Variáveis */
+    #despesas-variaveis h3 {
+      background-color: var(--warning-color);
+      color: #343A40;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    #despesas-variaveis table thead th {
+      background-color: var(--warning-color);
+      color: #343A40;
+      padding: 12px 10px;
+      text-align: left;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+    }
+    
+    /* Gastos com Funcionários */
+    #gastos-funcionarios h3 {
+      background-color: var(--primary-color);
+      color: #fff;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    #gastos-funcionarios table thead th {
+      background-color: var(--primary-color);
+      color: #fff;
+      padding: 12px 10px;
+      text-align: left;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+    }
+    
+    /* Tabelas responsivas */
+    .table-responsive {
+      overflow-x: auto;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 15px;
+    }
+    
+    td, th {
+      border: 1px solid #ddd;
+      padding: 10px;
+    }
+    
+    /* Estilização dos inputs */
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease, background-color 0.3s ease;
+    }
+    
+    input:focus {
+      border-color: var(--primary-color);
+      background-color: #f0f8ff;
+      outline: none;
+    }
+    
+    input[type="text"]:not([readonly]) {
+      text-align: left;
+    }
+    
+    /* Botões padrão */
+    button {
+      background-color: var(--primary-color);
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      margin-top: 5px;
+      margin-right: 5px;
+    }
+    
+    button:hover {
+      background-color: #0056b3;
+      transform: translateY(-2px);
+    }
+    
+    /* Botão de exclusão (estilo individual) */
+    .delete-btn {
+      background-color: #dc3545;
+    }
+    
+    /* Totais */
+    #totais h3 {
+      background-color: #6c757d;
+      color: #fff;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    
+    #totais div {
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+    }
+    
+    #totais input {
+      font-weight: bold;
+      background-color: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 8px 10px;
+      border-radius: 4px;
+    }
+    
+    /* Efeitos de hover nas linhas da tabela */
+    tbody tr:hover {
+      background-color: #f9f9f9;
+    }
+    
+    /* Media Queries para dispositivos menores */
+    @media (max-width: 768px) {
+      h2 {
+        font-size: 2rem;
+      }
+      section h3 {
+        font-size: 1.6rem;
+      }
+      td, th {
+        padding: 8px;
+        font-size: 0.95rem;
+      }
+      button {
+        font-size: 0.95rem;
+        padding: 9px 13px;
+      }
+      .legenda h4 {
+        font-size: 1.5rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        font-size: 1.125rem; /* Base maior para melhor visibilidade */
+        padding: 10px;
+      }
+      .container {
+        padding: 15px;
+        width: 100%;
+      }
+      h2 {
+        font-size: 2rem;
+      }
+      section h3 {
+        font-size: 1.6rem;
+      }
+      td, th {
+        padding: 8px;
+        font-size: 1rem;
+      }
+      button {
+        font-size: 1rem;
+        padding: 10px 15px;
+        margin-top: 5px;
+        margin-right: 5px;
+      }
+      .legenda h4 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Planilha Financeira Pessoal</h2>
+    
+    <!-- Legenda (organizada em duas colunas) -->
+    <div class="legenda">
+      <h4>Legenda</h4>
+      <ul>
+        <li style="color: var(--success-color);">
+          <strong>Receitas Fixas</strong>: Insira rendimentos recorrentes (ex.: salário).
+        </li>
+        <li style="color: var(--success-alt-color);">
+          <strong>Receitas Variáveis</strong>: Insira rendimentos que variam (ex.: comissões).
+        </li>
+        <li style="color: var(--danger-color);">
+          <strong>Despesas Fixas</strong>: Insira despesas regulares (ex.: aluguel).
+        </li>
+        <li style="color: var(--warning-color);">
+          <strong>Despesas Variáveis</strong>: Insira despesas oscilantes (ex.: supermercado).
+        </li>
+        <li style="color: var(--primary-color);">
+          <strong>Gastos com Funcionários</strong>: Insira custos com funcionários (ex.: salário, passagem, alimentação).
+        </li>
+      </ul>
+      <p>Cada categoria está diferenciada por cores para facilitar a visualização e organização das suas finanças.</p>
+    </div>
+    
+    <!-- RECEITAS FIXAS -->
+    <section id="receitas-fixas">
+      <h3>Receitas Fixas</h3>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th>Valor (R$)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Linhas serão carregadas do localStorage ou adicionadas -->
+          </tbody>
+        </table>
+      </div>
+      <div style="text-align: center;">
+        <button onclick="adicionarItem('receitas-fixas', 'receita')">Adicionar Receita Fixa</button>
+        <button class="delete-btn" onclick="excluirUltimaLinha('receitas-fixas')">Excluir Última Linha</button>
+      </div>
+    </section>
+    
+    <!-- RECEITAS VARIÁVEIS -->
+    <section id="receitas-variaveis">
+      <h3>Receitas Variáveis</h3>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th>Valor (R$)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Linhas serão carregadas do localStorage ou adicionadas -->
+          </tbody>
+        </table>
+      </div>
+      <div style="text-align: center;">
+        <button onclick="adicionarItem('receitas-variaveis', 'receita')">Adicionar Receita Variável</button>
+        <button class="delete-btn" onclick="excluirUltimaLinha('receitas-variaveis')">Excluir Última Linha</button>
+      </div>
+    </section>
+    
+    <!-- DESPESAS FIXAS -->
+    <section id="despesas-fixas">
+      <h3>Despesas Fixas</h3>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th>Valor (R$)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Linhas serão carregadas do localStorage ou adicionadas -->
+          </tbody>
+        </table>
+      </div>
+      <div style="text-align: center;">
+        <button onclick="adicionarItem('despesas-fixas', 'despesa')">Adicionar Despesa Fixa</button>
+        <button class="delete-btn" onclick="excluirUltimaLinha('despesas-fixas')">Excluir Última Linha</button>
+      </div>
+    </section>
+    
+    <!-- DESPESAS VARIÁVEIS -->
+    <section id="despesas-variaveis">
+      <h3>Despesas Variáveis</h3>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th>Valor (R$)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Linhas serão carregadas do localStorage ou adicionadas -->
+          </tbody>
+        </table>
+      </div>
+      <div style="text-align: center;">
+        <button onclick="adicionarItem('despesas-variaveis', 'despesa')">Adicionar Despesa Variável</button>
+        <button class="delete-btn" onclick="excluirUltimaLinha('despesas-variaveis')">Excluir Última Linha</button>
+      </div>
+    </section>
+    
+    <!-- GASTOS COM FUNCIONÁRIOS -->
+    <section id="gastos-funcionarios">
+      <h3>Gastos com Funcionários</h3>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome do Funcionário</th>
+              <th>Remuneração (R$)</th>
+              <th>Passagem (R$)</th>
+              <th>Alimentação (R$)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Linhas serão carregadas do localStorage ou adicionadas -->
+          </tbody>
+        </table>
+      </div>
+      <div style="text-align: center;">
+        <button onclick="adicionarFuncionario()">Adicionar Funcionário</button>
+        <button class="delete-btn" onclick="excluirUltimaLinha('gastos-funcionarios')">Excluir Última Linha</button>
+      </div>
+    </section>
+    
+    <!-- TOTAIS -->
+    <section id="totais">
+      <h3>Totais</h3>
+      <div>Total de Receitas: <input type="text" id="totalReceitas" readonly></div>
+      <div>Total de Despesas: <input type="text" id="totalDespesas" readonly></div>
+      <div>Saldo Final: <input type="text" id="saldoFinal" readonly></div>
+    </section>
+    
+    <!-- Botão para Exportar para PDF -->
+    <div style="text-align: center; margin-top: 20px;">
+      <button id="exportButton">Exportar</button>
+    </div>
+    
+  </div>
+  
+  <script>
+    const STORAGE_KEY = 'planilhaFinanceiraData';
+
+    // Calcula os totais e atualiza os campos correspondentes
+    function calcularTotais() {
+      let totalReceitas = 0;
+      let totalDespesas = 0;
+      
+      document.querySelectorAll("input.receita").forEach(input => {
+        totalReceitas += parseFloat(input.value) || 0;
+      });
+      
+      document.querySelectorAll("input.despesa").forEach(input => {
+        totalDespesas += parseFloat(input.value) || 0;
+      });
+      
+      document.getElementById("totalReceitas").value = totalReceitas.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById("totalDespesas").value = totalDespesas.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById("saldoFinal").value = (totalReceitas - totalDespesas).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      
+      // Salva os dados atualizados
+      saveAllData();
+    }
+    
+    // Adiciona uma nova linha para seções com Descrição e Valor
+    // Parâmetros opcionais permitem pré-preencher os campos (usado no loadData)
+    function adicionarItem(sectionId, tipo, descricao = '', valor = '') {
+      const section = document.getElementById(sectionId);
+      const tbody = section.querySelector("table tbody");
+      const tr = document.createElement("tr");
+      
+      // Célula de Descrição
+      const tdDesc = document.createElement("td");
+      const inputDesc = document.createElement("input");
+      inputDesc.type = "text";
+      inputDesc.placeholder = "Descrição";
+      inputDesc.value = descricao;
+      inputDesc.style.textAlign = "left";
+      inputDesc.addEventListener("input", calcularTotais);
+      tdDesc.appendChild(inputDesc);
+      
+      // Célula de Valor
+      const tdValor = document.createElement("td");
+      const inputValor = document.createElement("input");
+      inputValor.type = "number";
+      inputValor.className = tipo; // "receita" ou "despesa"
+      inputValor.min = "0";
+      inputValor.step = "0.01";
+      inputValor.value = valor;
+      inputValor.addEventListener("input", calcularTotais);
+      tdValor.appendChild(inputValor);
+      
+      tr.appendChild(tdDesc);
+      tr.appendChild(tdValor);
+      tbody.appendChild(tr);
+    }
+    
+    // Adiciona uma nova linha para a seção de Gastos com Funcionários
+    // Parâmetros opcionais permitem pré-preencher os campos (usado no loadData)
+    function adicionarFuncionario(nome = '', remuneracao = '', passagem = '', alimentacao = '') {
+      const section = document.getElementById("gastos-funcionarios");
+      const tbody = section.querySelector("table tbody");
+      const tr = document.createElement("tr");
+      
+      // Nome do Funcionário
+      const tdNome = document.createElement("td");
+      const inputNome = document.createElement("input");
+      inputNome.type = "text";
+      inputNome.placeholder = "Nome do Funcionário";
+      inputNome.value = nome;
+      inputNome.addEventListener("input", calcularTotais);
+      tdNome.appendChild(inputNome);
+      
+      // Remuneração
+      const tdRemuneracao = document.createElement("td");
+      const inputRemuneracao = document.createElement("input");
+      inputRemuneracao.type = "number";
+      inputRemuneracao.className = "despesa";
+      inputRemuneracao.min = "0";
+      inputRemuneracao.step = "0.01";
+      inputRemuneracao.value = remuneracao;
+      inputRemuneracao.addEventListener("input", calcularTotais);
+      tdRemuneracao.appendChild(inputRemuneracao);
+      
+      // Passagem
+      const tdPassagem = document.createElement("td");
+      const inputPassagem = document.createElement("input");
+      inputPassagem.type = "number";
+      inputPassagem.className = "despesa";
+      inputPassagem.min = "0";
+      inputPassagem.step = "0.01";
+      inputPassagem.value = passagem;
+      inputPassagem.addEventListener("input", calcularTotais);
+      tdPassagem.appendChild(inputPassagem);
+      
+      // Alimentação
+      const tdAlimentacao = document.createElement("td");
+      const inputAlimentacao = document.createElement("input");
+      inputAlimentacao.type = "number";
+      inputAlimentacao.className = "despesa";
+      inputAlimentacao.min = "0";
+      inputAlimentacao.step = "0.01";
+      inputAlimentacao.value = alimentacao;
+      inputAlimentacao.addEventListener("input", calcularTotais);
+      tdAlimentacao.appendChild(inputAlimentacao);
+      
+      tr.appendChild(tdNome);
+      tr.appendChild(tdRemuneracao);
+      tr.appendChild(tdPassagem);
+      tr.appendChild(tdAlimentacao);
+      tbody.appendChild(tr);
+    }
+    
+    // Exclui a última linha da seção especificada.
+    // Se houver apenas uma linha, os inputs são limpos.
+    function excluirUltimaLinha(sectionId) {
+      const section = document.getElementById(sectionId);
+      const tbody = section.querySelector("table tbody");
+      const rows = tbody.querySelectorAll("tr");
+      if (rows.length > 1) {
+        rows[rows.length - 1].remove();
+      } else if (rows.length === 1) {
+        rows[0].querySelectorAll("input").forEach(input => input.value = "");
+      }
+      calcularTotais();
+      saveAllData();
+    }
+    
+    // Salva todos os dados atuais da planilha no localStorage
+    function saveAllData() {
+      const data = {
+        receitasFixas: [],
+        receitasVariaveis: [],
+        despesasFixas: [],
+        despesasVariaveis: [],
+        gastosFuncionarios: []
+      };
+      
+      // Receitas Fixas
+      document.querySelectorAll("#receitas-fixas tbody tr").forEach(row => {
+        const inputs = row.querySelectorAll("input");
+        data.receitasFixas.push({
+          descricao: inputs[0].value,
+          valor: inputs[1].value
+        });
+      });
+      
+      // Receitas Variáveis
+      document.querySelectorAll("#receitas-variaveis tbody tr").forEach(row => {
+        const inputs = row.querySelectorAll("input");
+        data.receitasVariaveis.push({
+          descricao: inputs[0].value,
+          valor: inputs[1].value
+        });
+      });
+      
+      // Despesas Fixas
+      document.querySelectorAll("#despesas-fixas tbody tr").forEach(row => {
+        const inputs = row.querySelectorAll("input");
+        data.despesasFixas.push({
+          descricao: inputs[0].value,
+          valor: inputs[1].value
+        });
+      });
+      
+      // Despesas Variáveis
+      document.querySelectorAll("#despesas-variaveis tbody tr").forEach(row => {
+        const inputs = row.querySelectorAll("input");
+        data.despesasVariaveis.push({
+          descricao: inputs[0].value,
+          valor: inputs[1].value
+        });
+      });
+      
+      // Gastos com Funcionários
+      document.querySelectorAll("#gastos-funcionarios tbody tr").forEach(row => {
+        const inputs = row.querySelectorAll("input");
+        data.gastosFuncionarios.push({
+          nome: inputs[0].value,
+          remuneracao: inputs[1].value,
+          passagem: inputs[2].value,
+          alimentacao: inputs[3].value
+        });
+      });
+      
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+    
+    // Carrega os dados salvos do localStorage e popula as tabelas.
+    // Se não houver dados, cria uma linha padrão para cada seção.
+    function loadData() {
+      const dataStr = localStorage.getItem(STORAGE_KEY);
+      if (dataStr) {
+        const data = JSON.parse(dataStr);
+        
+        // Receitas Fixas
+        const tbodyReceitasFixas = document.querySelector("#receitas-fixas tbody");
+        tbodyReceitasFixas.innerHTML = "";
+        if (data.receitasFixas && data.receitasFixas.length > 0) {
+          data.receitasFixas.forEach(item => {
+            adicionarItem("receitas-fixas", "receita", item.descricao, item.valor);
+          });
+        } else {
+          adicionarItem("receitas-fixas", "receita");
+        }
+        
+        // Receitas Variáveis
+        const tbodyReceitasVariaveis = document.querySelector("#receitas-variaveis tbody");
+        tbodyReceitasVariaveis.innerHTML = "";
+        if (data.receitasVariaveis && data.receitasVariaveis.length > 0) {
+          data.receitasVariaveis.forEach(item => {
+            adicionarItem("receitas-variaveis", "receita", item.descricao, item.valor);
+          });
+        } else {
+          adicionarItem("receitas-variaveis", "receita");
+        }
+        
+        // Despesas Fixas
+        const tbodyDespesasFixas = document.querySelector("#despesas-fixas tbody");
+        tbodyDespesasFixas.innerHTML = "";
+        if (data.despesasFixas && data.despesasFixas.length > 0) {
+          data.despesasFixas.forEach(item => {
+            adicionarItem("despesas-fixas", "despesa", item.descricao, item.valor);
+          });
+        } else {
+          adicionarItem("despesas-fixas", "despesa");
+        }
+        
+        // Despesas Variáveis
+        const tbodyDespesasVariaveis = document.querySelector("#despesas-variaveis tbody");
+        tbodyDespesasVariaveis.innerHTML = "";
+        if (data.despesasVariaveis && data.despesasVariaveis.length > 0) {
+          data.despesasVariaveis.forEach(item => {
+            adicionarItem("despesas-variaveis", "despesa", item.descricao, item.valor);
+          });
+        } else {
+          adicionarItem("despesas-variaveis", "despesa");
+        }
+        
+        // Gastos com Funcionários
+        const tbodyGastosFuncionarios = document.querySelector("#gastos-funcionarios tbody");
+        tbodyGastosFuncionarios.innerHTML = "";
+        if (data.gastosFuncionarios && data.gastosFuncionarios.length > 0) {
+          data.gastosFuncionarios.forEach(item => {
+            adicionarFuncionario(item.nome, item.remuneracao, item.passagem, item.alimentacao);
+          });
+        } else {
+          adicionarFuncionario();
+        }
+      } else {
+        // Se não houver dados salvos, cria uma linha padrão para cada seção.
+        adicionarItem("receitas-fixas", "receita");
+        adicionarItem("receitas-variaveis", "receita");
+        adicionarItem("despesas-fixas", "despesa");
+        adicionarItem("despesas-variaveis", "despesa");
+        adicionarFuncionario();
+      }
+      
+      // Atualiza os totais após o carregamento
+      calcularTotais();
+    }
+    
+    // Carrega os dados ao iniciar a página
+    window.addEventListener("load", loadData);
+  </script>
+  
+  <!-- Bibliotecas para exportação em PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  
+  <script>
+    // Função que, ao clicar no botão Exportar, gera um PDF com o conteúdo da .container
+    document.getElementById("exportButton").addEventListener("click", function() {
+      html2canvas(document.querySelector(".container")).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save("planilha_financeira.pdf");
+      });
+    });
+  </script>
+</body>
+</html>
